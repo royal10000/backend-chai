@@ -1,0 +1,15 @@
+{
+  "name": "backend-tutorial",
+  "version": "1.0.0",
+  "description": "This is backend project with tutorial",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "backend"
+  ],
+  "author": "Thuman Rana",
+  "license": "ISC"
+}
