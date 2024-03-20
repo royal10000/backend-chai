@@ -11,7 +11,7 @@
 //             console.error("unable to connect to your database", DB_NAME)
 //             throw error;
 //         })
-//         anpm codpp.listen(process.env.PORT, () => {
+//         app.listen(process.env.PORT, () => {
 //             console.log(`app is running on ${process.env.PORT}`)
 //         })
 //     } catch (error) {
