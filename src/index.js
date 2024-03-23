@@ -23,15 +23,19 @@
 // console.log("hello world")
 import connectDB from "./db/db.js"
 import { app } from './app.js'
+import { DB_NAME } from "./constant.js"
+
+
 connectDB()
-.then(()=>{
-    // console.log("hel")
-    app.on("error",(err)=>{
-        console.log("some thing is wrong with your app and db connection : ",err)
+    .then(() => {
+        // console.log("hel")
+        app.on("error", (err) => {
+            console.log("some thing is wrong with your app and db connection : ", err)
+        })
+        app.listen(process.env.PORT || 8000, () => {
+            console.log(`database is connected and launched in port : ${process.env.PORT}`)
+            console.log(`${process.env.MONGODB_URI}/${DB_NAME}`)
+        })
+    }).catch((e) => {
+        console.log("Error handle in index.js page", e)
     })
-    app.listen(process.env.PORT||8000,()=>{
-        console.log(`database is connected and launched in port : ${process.env.PORT}`)
-    })
-}).catch((e)=>{
-    console.log("Error handle in index.js page",e )
-})
