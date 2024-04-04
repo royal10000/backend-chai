@@ -32,7 +32,7 @@ connectDB()
         app.on("error", (err) => {
             console.log("some thing is wrong with your app and db connection : ", err)
         })
-        app.listen(process.env.PORT || 8000, () => {
+        app.listen(process.env.PORT || 4000, () => {
             console.log(`database is connected and launched in port : ${process.env.PORT}`)
             console.log(`${process.env.MONGODB_URI}/${DB_NAME}`)
         })

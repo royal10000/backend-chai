@@ -11,7 +11,8 @@ const generateAccessAndRefreshTokens = async (userId) => {
         const userFind = await User.findById(userId)
         const accessToken = userFind.generateAccessToken()
         const refreshToken = userFind.generateRefreshToken()
-        userFind.refreshToken = refreshToken
+
+        userFind.set({ refreshToken: refreshToken })
         await userFind.save({ validateBeforeSave: false });
         return { accessToken, refreshToken }
     } catch (e) {
@@ -37,9 +38,8 @@ const registerUser = asyncHandler(async (req, res) => {
     let coverImagePath;
     if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
         coverImagePath = req.files.coverImage[0].path
-    } else {
-        console.log('cover image is not available but no problem in code')
     }
+
     if (
         [fullname, username, password, email].some((field) => {
             return field?.trim() === ""
@@ -61,14 +61,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
     if (!avatarPath) {
-        throw new ApiError(400, " Avatar file is required");
+        throw new ApiError(400, " Avatar file is required in controller");
     }
 
 
     const cloudinaryavatarPath = await uploadOnCloudinary(avatarPath)
+
     const cloudinarycoverImagePath = await uploadOnCloudinary(coverImagePath)
 
-    console.log(cloudinaryavatarPath)
 
     if (!cloudinaryavatarPath) {
         throw new ApiError(400, " Avatar file is required");
@@ -198,6 +198,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "invalid refresh token")
         }
 
+
         if (incomingRefreshToken !== userFind?.refreshToken) {
             throw new ApiError(401, "refresh token is expired or used")
         }
@@ -206,12 +207,13 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             httpOnly: true,
             secure: true
         }
-        const { accessToken, newrefreshToken } = await generateAccessAndRefreshTokens(userFind._id)
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(userFind._id);
+        const user = await User.findById(_id)
 
         res.status(200)
             .cookie("accessToken", accessToken, options)
             .cookie("refreshToken", refreshToken, options)
-            .json(new ApiResponse(200, { accessToken, refreshToken: newrefreshToken }, "Access token refreshed"))
+            .json(new ApiResponse(200, { accessToken, refreshToken: refreshToken }, "Access token refreshed"))
     } catch (error) {
         throw new ApiError(401, error?.message || "invalid token")
     }
@@ -224,7 +226,6 @@ const changePassword = asyncHandler(async (req, res) => {
     }
 
     const userFind = await User.findById(req.user?._id)
-
     const isPasswordCorrect = await userFind.isPasswordCorrect(oldPassword)
     if (!isPasswordCorrect) {
         throw new ApiError(400, "invalid password")
@@ -249,14 +250,13 @@ const updateProfile = asyncHandler(async (req, res) => {
         throw new ApiError(400, " All field are required")
     }
 
-    const userFind = User.findByIdAndUpdate(req.user._id, {
-        $or: {
+
+    const userFind = await User.findByIdAndUpdate(req.user._id, {
+        $set: {
             fullname: fullname,
             email: email
         }
-    }, {
-        new: true
-    }).select("-password -refreshToken")
+    }, { new: true }).select("-password -refreshToken")
 
     return res.status(200).json(new ApiResponse(200, userFind, "profile update successfully"))
 })
@@ -271,7 +271,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     const userFind = await User.findByIdAndUpdate(req.user?._id, {
         $set: { avatar: avatar.url }
     },
-        { new: true }).select("-password")
+        { new: true })
+        .select("-password")
     return res.status(200).json(new ApiResponse(200, userFind, "avatar image updated successfully"))
 })
 
@@ -342,7 +343,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         {
             $project: {
                 fullname: 1,
-                 username: 1,
+                username: 1,
                 avatar: 1,
                 subscribersCount: 1,
                 channelsSubscribedToCount: 1,
@@ -357,8 +358,7 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
         throw new ApiError(404, "channel doesnot exists")
     }
     return res.status(200)
-    .json(new ApiResponse(200,channel[0],"user channel fetched successfully"))
-    console.log(channel)
+        .json(new ApiResponse(200, channel[0], "user channel fetched successfully"))
 })
 
 export {
