@@ -4,7 +4,7 @@ const videoSchema = new Schema(
     {
         videoFile: {
             type: String, //cloudinary url
-            required: true
+            // required: true
         },
         thumbnail: {
             type: String, //cloudinary url
@@ -33,6 +33,14 @@ const videoSchema = new Schema(
         owner:{
             type:Schema.Types.ObjectId,
             ref:"User"
+        },
+        likes:{
+            type:Schema.Types.ObjectId,
+            ref:"Like"
+        },
+        comments:{
+            type:Schema.Types.ObjectId,
+            ref:"Comment"
         }
 
     },
